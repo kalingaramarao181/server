@@ -7,19 +7,18 @@ const getEmailTemplate = require('../utils/getEmailTamplate');
 // Upload Document
 const uploadDocument = async (req, res) => {
     if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-
+    
     try {
         const filePath = req.file.path.replace(/\\/g, '/');
         await Document.upload(req.user.id, req.body.signerUser, req.file.filename, filePath);
 
         const signerUserEmail = req.body.signerUserEmail; 
-        console.log(signerUserEmail);
         
 
         if (signerUserEmail) {
-            const subject = "New Document Assigned for Signing";
+            const subject = req.body.emailSubject;
             const text = `You have been assigned a new document for signing. Access it here: ${filePath}`;
-            const html = getEmailTemplate(filePath)
+            const html = getEmailTemplate(filePath, req.body.signerUser, req.body.emailMessage, signerUserEmail, req.body.documentUser);
 
             await sendEmail(signerUserEmail, subject, text, html);
         }
