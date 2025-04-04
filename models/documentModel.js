@@ -4,7 +4,7 @@ const Document = {
     upload: (userId, signerUser, title, filePath, status = 'pending') => {
         return new Promise((resolve, reject) => {
             db.query(
-                `INSERT INTO documents (user_id, signer_id, title, file_path, status, created_at) VALUES (?, ?, ?, ?, ?, NOW())`,
+                `INSERT INTO documents (user_id, signer_email, title, file_path, status, created_at) VALUES (?, ?, ?, ?, ?, NOW())`,
                 [userId, signerUser, title, filePath, status],
                 (err, result) => {
                     if (err) reject(err);
@@ -13,6 +13,32 @@ const Document = {
             );
         });
     },
+
+    update: (documentId, userId, signerUser, title, filePath, status = 'signed', signerRole = 'signer') => {
+        return new Promise((resolve, reject) => {
+            db.query(
+                `UPDATE documents SET title = ?, file_path = ?, status = ?, created_at = NOW() WHERE id = ?`,
+                [ title, filePath, status, documentId],
+                (err, updateResult) => {
+                    if (err) return reject(err);
+    
+                    db.query(
+                        `INSERT INTO document_signers (document_id, user_id, signer_role, status) VALUES (?, ?, ?, ?)`,
+                        [documentId, userId, signerRole, status],
+                        (err, signerResult) => {
+                            if (err) return reject(err);
+    
+                            resolve({
+                                documentUpdate: updateResult,
+                                signerInsert: signerResult
+                            });
+                        }
+                    );
+                }
+            );
+        });
+    },
+    
 
     addSigners: (documentId, signerIds) => {
         return new Promise((resolve, reject) => {
@@ -54,15 +80,15 @@ const Document = {
         });
     },
 
-    getDocumentsBySignerId: (signerId) => {
+    getDocumentsBySignerId: (signerEmail) => {
         return new Promise((resolve, reject) => {
             db.query(
-                `SELECT * FROM documents WHERE signer_id = ?`,
-                [signerId],
+                `SELECT * FROM documents WHERE signer_email = ?`,
+                [signerEmail],
                 (err, result) => {
                     if (err) reject(err);
                     resolve(result);
-                }
+                }   
             );
         });
     },

@@ -38,6 +38,25 @@ const User = {
         });
     },
 
+    findEmailById: (userId) => {
+        return new Promise((resolve, reject) => {
+            db.query(
+                `SELECT email FROM users WHERE id = ?`, 
+                [userId], 
+                (err, result) => {
+                    if (err) {
+                        reject(err);
+                    } else if (result.length === 0) {
+                        resolve(null);
+                    } else {
+                        resolve(result[0].email);
+                    }
+                }
+            );
+        });
+    },
+
+
     findUserByRole: (roleId) => {
         return new Promise((resolve, reject) => {
             db.query(
