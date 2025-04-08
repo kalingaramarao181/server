@@ -49,7 +49,7 @@ const updateDocument = async (req, res) => {
 
         // Send email to signer
         if (signerEmail) {
-            const subject = req.body.emailSubject || "New Document for Signing";
+            const subject = req.body.emailSubject || `Document Was Signed By ${signerEmail}`;
             const text = `You have been assigned a new document for signing. Access it here: ${filePath}`;
             const html = getEmailTemplate(filePath, signerEmail, req.body.emailMessage, signerEmail, documentUser);
 
